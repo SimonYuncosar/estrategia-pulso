@@ -1,0 +1,10 @@
+# Ignorar el entorno virtual
+venv/
+
+# Ignorar carpetas de datos
+data/
+*.csv
+graficos/
+
+.vscode/
+__pycache__/
