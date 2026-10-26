@@ -39,6 +39,11 @@ def graficar_compras_pulso(df, titulo="Backtest Estrategia", nombre_archivo=None
         line=dict(color='cyan', width=1.5), name='EMA 20'
     ), row=1, col=1)
 
+    fig.add_trace(go.Scatter(
+        x=fechas_ejex, y=df['EMA_200'], 
+        line=dict(color='orange', width=2), name='EMA 200'
+    ), row=1, col=1)
+
     compras = df[df['Senal_Compra'] == True]
     fechas_senales = compras.index.strftime('%Y-%m-%d %H:%M')
     

@@ -27,13 +27,16 @@ df['ADX_14'] = adx_df['ADX_14']
 df['DI_Plus'] = adx_df['DMP_14']   # Extracción del +DI
 df['DI_Minus'] = adx_df['DMN_14']  # Extracción del -DI
 
-# 3. LÓGICA BULLISH (MÁSCARAS BOOLEANAS)
+# 3. LÓGICA BULLISH (Generación de Señales de Compra)
 tendencia_fuerte = df['ADX_14'] > 25
-pullback_ema = (df['Low'] <= df['EMA_20']) & (df['Close'] > df['EMA_20'])
+toque_actual = (df['Low'] <= df['EMA_20']) & (df['Close'] > df['EMA_20'])
+toque_anterior = (df['Low'].shift(1) <= df['EMA_20'].shift(1)) & (df['Close'].shift(1) > df['EMA_20'].shift(1))
+pullback_ema = (toque_actual | toque_anterior)
+vela_actual_alcista = df['Close'] > df['Open']
 vela_ant_bajista = df['Close'].shift(1) < df['Open'].shift(1)
-envuelve_cuerpo = (df['Open'] <= df['Close'].shift(1)) & (df['Close'] > df['Open'].shift(1))
+envuelve_cuerpo = vela_actual_alcista & (df['Close'] > df['High'].shift(1))
 
-# NUEVOS FILTROS: Dirección Alcista Estricta
+# Dirección Alcista Estricta con EMA 200 y DI+
 precio_sobre_ema200 = df['Close'] > df['EMA_200']
 di_alcista = df['DI_Plus'] > df['DI_Minus']
 
