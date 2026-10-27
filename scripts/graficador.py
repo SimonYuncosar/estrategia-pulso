@@ -57,6 +57,16 @@ def graficar_compras_pulso(df, titulo="Backtest Estrategia", nombre_archivo=None
         x=fechas_ejex, y=df['ADX_14'], 
         line=dict(color='magenta', width=1.5), name='ADX 14'
     ), row=2, col=1)
+
+    fig.add_trace(go.Scatter(
+        x=fechas_ejex, y=df['DI_Plus'], 
+        line=dict(color='green', width=1, dash='dot'), name='+DI'
+    ), row=2, col=1)
+
+    fig.add_trace(go.Scatter(
+        x=fechas_ejex, y=df['DI_Minus'], 
+        line=dict(color='red', width=1, dash='dot'), name='-DI'
+    ), row=2, col=1)
     
     fig.add_hline(y=25, line_dash="dash", line_color="red", row=2, col=1, annotation_text="Filtro Tendencia (25)")
 

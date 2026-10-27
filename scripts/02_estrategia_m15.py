@@ -35,14 +35,19 @@ pullback_ema = (toque_actual | toque_anterior)
 vela_actual_alcista = df['Close'] > df['Open']
 vela_ant_bajista = df['Close'].shift(1) < df['Open'].shift(1)
 envuelve_cuerpo = vela_actual_alcista & (df['Close'] > df['High'].shift(1))
-
-# Dirección Alcista Estricta con EMA 200 y DI+
 precio_sobre_ema200 = df['Close'] > df['EMA_200']
 di_alcista = df['DI_Plus'] > df['DI_Minus']
 
+# 3.1 FILTRO DE HORARIO: Solo consideramos las señales generadas entre las 9:59 y las 15:01 HORARIO NYSE (EST)
+hora_inicio = pd.to_datetime("09:59").time()
+hora_fin = pd.to_datetime("15:01").time()
+en_horario = (df.index.time >= hora_inicio) & (df.index.time <= hora_fin)
+dia_habil = df.index.dayofweek <= 4  # 0 es Lunes, 4 es Viernes
+sesion_activa = en_horario & dia_habil
+
 # 4. GENERACIÓN DE SEÑALES
 # Incorporamos las nuevas máscaras con el operador & (AND)
-df['Senal_Compra'] = tendencia_fuerte & pullback_ema & vela_ant_bajista & envuelve_cuerpo & precio_sobre_ema200 & di_alcista
+df['Senal_Compra'] = tendencia_fuerte & pullback_ema & vela_ant_bajista & envuelve_cuerpo & precio_sobre_ema200 & di_alcista & sesion_activa
 df = df.dropna()
 
 # 5. GUARDADO Y MÉTRICAS
