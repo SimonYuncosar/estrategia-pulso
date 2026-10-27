@@ -19,13 +19,13 @@ if not os.path.exists(ARCHIVO_DATOS):
 df = pd.read_csv(ARCHIVO_DATOS, index_col=0, parse_dates=True)
 
 # 2. INDICADORES TÉCNICOS
-df['EMA_20'] = ta.ema(df['Close'], length=20)
-df['EMA_200'] = ta.ema(df['Close'], length=200)  # Nuevo Indicador: Filtro de Precio Macro
-
+df['EMA_20'] = ta.ema(df['Close'], length=20) # EMA 20
+df['EMA_200'] = ta.ema(df['Close'], length=200) # EMA 200
 adx_df = ta.adx(df['High'], df['Low'], df['Close'], length=14)
-df['ADX_14'] = adx_df['ADX_14']
+df['ADX_14'] = adx_df['ADX_14']    # Extracción del ADX 14
 df['DI_Plus'] = adx_df['DMP_14']   # Extracción del +DI
 df['DI_Minus'] = adx_df['DMN_14']  # Extracción del -DI
+df['ATR_14'] = ta.atr(df['High'], df['Low'], df['Close'], length=14) # Extracción del ATR 14
 
 # 3. LÓGICA BULLISH (Generación de Señales de Compra)
 tendencia_fuerte = df['ADX_14'] > 25
@@ -49,6 +49,23 @@ sesion_activa = en_horario & dia_habil
 # Incorporamos las nuevas máscaras con el operador & (AND)
 df['Senal_Compra'] = tendencia_fuerte & pullback_ema & vela_ant_bajista & envuelve_cuerpo & precio_sobre_ema200 & di_alcista & sesion_activa
 df = df.dropna()
+
+# 4.1 Cálculo de los niveles de entrada, stop loss y take profit para las señales de compra
+spread = 2.0
+multiplicador_sl = 1.5
+ratio_tp = 1.2
+
+# 4.1.2 Precio de Entrada Real (Cierre + Spread del Ask)
+df.loc[df['Senal_Compra'], 'Precio_Entrada'] = df['Close'] + spread
+
+# 4.1.3 Distancia de Riesgo basada en la volatilidad de ese instante
+df.loc[df['Senal_Compra'], 'Riesgo_Puntos'] = df['ATR_14'] * multiplicador_sl
+
+# 4.1.4 Nivel de Stop Loss exacto
+df.loc[df['Senal_Compra'], 'SL'] = df['Precio_Entrada'] - df['Riesgo_Puntos']
+
+# 4.1.5 Nivel de Take Profit exacto (Riesgo * 1.2)
+df.loc[df['Senal_Compra'], 'TP'] = df['Precio_Entrada'] + (df['Riesgo_Puntos'] * ratio_tp)
 
 # 5. GUARDADO Y MÉTRICAS
 df.to_csv(ARCHIVO_RESULTADOS)
